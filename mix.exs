@@ -1,0 +1,54 @@
+defmodule TunnelProxy.MixProject do
+  use Mix.Project
+
+  def project do
+    [
+      app: :tunnel_proxy,
+      version: "0.1.2",
+      elixir: "~> 1.12",
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+      description: "HTTP Server + PTY Shell Forwarder",
+      package: package(),
+      docs: docs()
+    ]
+  end
+
+  def application do
+    [
+      extra_applications: [:logger, :inets, :ssl],
+      mod: {TunnelProxy.Application, []},
+      env: [
+        http_port: 8080,
+        pty_port: 27417,
+        doc_root: "./www",
+        upload_dir: "./uploads"
+      ]
+    ]
+  end
+
+  defp deps do
+    [
+      {:jason, "~> 1.4"},
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp package do
+    [
+      name: "tunnel_proxy",
+      files: ["lib", "mix.exs", "README.md", "LICENSE", ".formatter.exs"],
+      maintainers: ["TurinFohlen"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/TurinFohlen/tunnel_proxy"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "TunnelProxy",
+      extras: ["README.md"]
+    ]
+  end
+end

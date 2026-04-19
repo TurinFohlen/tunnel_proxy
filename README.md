@@ -17,7 +17,7 @@ HTTP Server + PTY Shell Forwarder - A lightweight all-in-one tool for file servi
 ```elixir
 def deps do
   [
-    {:tunnel_proxy, "~> 0.1.0"}
+    {:tunnel_proxy, "~> 0.1.2"}
   ]
 end
 ```
@@ -36,6 +36,9 @@ Quick Start
 Start the Server
 
 ```bash
+export TUNNEL_DOC_ROOT="your/root/path"
+export TUNNEL_UPLOAD_DIR="your/upload/path"
+mkdir -p "$TUNNEL_DOC_ROOT" "$TUNNEL_UPLOAD_DIR"
 mix run --no-halt -e "TunnelProxy.Server.start(8080)"
 ```
 
@@ -162,7 +165,7 @@ by adding `tunnel_proxy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tunnel_proxy, "~> 0.1.0"}
+    {:tunnel_proxy, "~> 0.1.2"}
   ]
 end
 ```
