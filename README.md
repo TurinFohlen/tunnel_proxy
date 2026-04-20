@@ -17,7 +17,7 @@ HTTP Server + PTY Shell Forwarder - A lightweight all-in-one tool for file servi
 ```elixir
 def deps do
   [
-    {:tunnel_proxy, "~> 0.1.2"}
+    {:tunnel_proxy, "~> 0.1.3"}
   ]
 end
 ```
@@ -113,30 +113,68 @@ cd /sdcard/Download/tunnel_proxy
 mix run --no-halt -e "TunnelProxy.Server.start(8080)"
 ```
 
-With frp (Intranet Penetration)
+## With frp (Intranet Penetration)
 
-```toml
-# frpc.toml
-[[proxies]]
-name = "tunnel-http"
-type = "tcp"
-localIP = "127.0.0.1"
-localPort = 8080
-remotePort = 8080
-
-[[proxies]]
-name = "tunnel-shell"
-type = "tcp"
-localIP = "127.0.0.1"
-localPort = 27417
-remotePort = 27417
-```
-
-Then access from anywhere:
+Create a setup script that generates a secure, unique FRP configuration:
 
 ```bash
-nc your-frp-server.com 27417
-curl http://your-frp-server.com:8080/
+cat > setup-frp.sh << 'SETUP_EOF'
+#!/bin/bash
+# setup-frp.sh - Generate frpc.toml with a unique hash name
+
+FRPC_CONFIG="frpc.toml"
+
+# Generate 256-bit random name
+PROXY_NAME="tunnel-$(openssl rand -hex 32)"
+
+# Random high ports (49152-65535)
+HTTP_PORT=$((10001 + RANDOM % 40000))
+SHELL_PORT=$((10001 + RANDOM % 40000))
+while [ $SHELL_PORT -eq $HTTP_PORT ]; do
+    SHELL_PORT=$((10001 + RANDOM % 40000))
+done
+
+# Write config with variable expansion (note: no quotes around EOF)
+cat > "$FRPC_CONFIG" << FRPC_EOF
+serverAddr = "frp.freefrp.net"
+serverPort = 7000
+auth.token = "freefrp.net"
+
+[[proxies]]
+name = "$PROXY_NAME-http"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = ${TUNNEL_HTTP_PORT:-8080}
+remotePort = $HTTP_PORT
+
+[[proxies]]
+name = "$PROXY_NAME-shell"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = ${TUNNEL_PTY_PORT:-27417}
+remotePort = $SHELL_PORT
+FRPC_EOF
+
+echo "✅ Generated $FRPC_CONFIG"
+echo "   Proxy name prefix: $PROXY_NAME"
+echo ""
+echo "📋 Connection info (save these):"
+echo "   HTTP:  frp.freefrp.net:$HTTP_PORT"
+echo "   Shell: frp.freefrp.net:$SHELL_PORT"
+echo ""
+echo "🎲 Your service is now invisible to scanners."
+SETUP_EOF
+
+chmod 755 setup-frp.sh
+./setup-frp.sh
+```
+
+
+After running, connect using the ports shown in the output,
+then access from anywhere:
+```bash
+nc frp.freefrp.net <YOUR_SHELL_PORT>
+curl http://frp.freefrp.net:<YOUR_HTTP_PORT>/
 ```
 
 Requirements
@@ -165,7 +203,7 @@ by adding `tunnel_proxy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tunnel_proxy, "~> 0.1.2"}
+    {:tunnel_proxy, "~> 0.1.3"}
   ]
 end
 ```
