@@ -23,6 +23,3 @@ erl_crash.dump
 tunnel_proxy-*.tar
 
 .bak
-
-.pyc
-
