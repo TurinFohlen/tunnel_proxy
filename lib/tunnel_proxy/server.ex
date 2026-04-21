@@ -48,7 +48,7 @@ defmodule TunnelProxy.Server do
     {:ok, %{http: http_ls, pty: pty_ls}}
   end
 
-  # ========== PTY ==========
+  # ========== PTY (ExPTY 实现) ==========
   defp pty_accept_loop(ls) do
     {:ok, sock} = :gen_tcp.accept(ls)
     spawn_link(fn -> pty_handler(sock) end)
@@ -58,44 +58,30 @@ defmodule TunnelProxy.Server do
   defp pty_handler(sock) do
     shell = System.get_env("SHELL") || "/bin/sh"
 
-    port = Port.open({:spawn, String.to_charlist(shell)}, [
-      :binary,
-      :exit_status,
-      :stderr_to_stdout
-    ])
+    {:ok, pty} = ExPTY.spawn(shell, [],
+      name: "xterm-256color",
+      cols: 80,
+      rows: 24,
+      on_data: fn _pty, _pid, data -> :gen_tcp.send(sock, data) end,
+      on_exit: fn _pty, _pid, _code, _sig -> :gen_tcp.close(sock) end
+    )
 
-    parent = self()
-    spawn_link(fn -> socket_to_port(sock, port, parent) end)
-    port_to_socket(port, sock)
+    socket_to_pty(sock, pty)
   rescue
     _ -> :ok
   after
     :gen_tcp.close(sock)
   end
 
-  defp socket_to_port(sock, port, owner) do
+  defp socket_to_pty(sock, pty) do
     case :gen_tcp.recv(sock, 0, 1000) do
       {:ok, data} ->
-        Port.command(port, data)
-        socket_to_port(sock, port, owner)
+        ExPTY.write(pty, data)
+        socket_to_pty(sock, pty)
       {:error, :timeout} ->
-        socket_to_port(sock, port, owner)
+        socket_to_pty(sock, pty)
       {:error, _} ->
-        send(owner, :socket_closed)
-    end
-  end
-
-  defp port_to_socket(port, sock) do
-    receive do
-      {^port, {:data, data}} ->
-        :gen_tcp.send(sock, data)
-        port_to_socket(port, sock)
-      {^port, {:exit_status, _}} ->
-        :gen_tcp.close(sock)
-      :socket_closed ->
-        Port.close(port)
-      _ ->
-        port_to_socket(port, sock)
+        :ok
     end
   end
 

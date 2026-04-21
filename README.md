@@ -106,10 +106,10 @@ UPLOAD_MAGIC MY_MAGIC_2025_FILE_HEAD Magic word for upload validation
 
 Use Cases
 
-Termux / Android
+unix
 
 ```bash
-cd /sdcard/Download/tunnel_proxy
+cd ~/tunnel_proxy
 mix run --no-halt -e "TunnelProxy.Server.start(8080)"
 ```
 
