@@ -1,0 +1,36 @@
+#!/usr/bin/env elixir
+
+Mix.install([:expty])
+
+defmodule PTYTest do
+  def run do
+    # 使用 bash 更稳定，回调用函数捕获
+    {:ok, pty} = ExPTY.spawn("bash", [],
+      name: "xterm-256color",
+      cols: 80,
+      rows: 24,
+      on_data: &PTYTest.on_data/3,
+      on_exit: &PTYTest.on_exit/4
+    )
+
+    IO.puts("PTY spawned, PID: #{inspect(pty)}")
+
+    # 正确的写入 API
+    ExPTY.write(pty, "echo 'PTY works!'\n")
+    ExPTY.write(pty, "tty\n")
+    ExPTY.write(pty, "exit\n")
+
+    # 等待足够时间让输出刷出
+    Process.sleep(2000)
+  end
+
+  def on_data(_pty, _pid, data) do
+    IO.write(data)
+  end
+
+  def on_exit(_pty, _pid, exit_code, _signal_code) do
+    IO.puts("\nProcess exited with code #{exit_code}")
+  end
+end
+
+PTYTest.run()
