@@ -1,0 +1,69 @@
+defmodule TunnelProxy.AgentManager do
+  @moduledoc "Agent 注册 / 认证 / 心跳"
+
+  alias TunnelProxy.Cache
+
+  @index_key "agent:index"
+
+  # ── 注册 ──────────────────────────────────────────────────────────────────
+  def register(agent_id, metadata) do
+    token      = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
+    token_hash = Bcrypt.hash_pwd_salt(token)
+
+    session = %{
+      id:               agent_id,
+      hostname:         Map.get(metadata, "hostname", "unknown"),
+      username:         Map.get(metadata, "username", "unknown"),
+      os:               Map.get(metadata, "os", "unknown"),
+      registered_at:    utc_now(),
+      last_heartbeat:   utc_now(),
+      token_hash:       token_hash,
+      status:           "online"
+    }
+
+    Cache.put("agent:session:#{agent_id}", session)
+    add_to_index(agent_id)
+    {:ok, public(session), token}
+  end
+
+  # ── 认证 ──────────────────────────────────────────────────────────────────
+  def authenticate(agent_id, token) do
+    case Cache.get("agent:session:#{agent_id}") do
+      nil     -> {:error, :not_found}
+      session ->
+        if Bcrypt.verify_pass(token, session.token_hash),
+          do:   {:ok, session},
+          else: {:error, :unauthorized}
+    end
+  end
+
+  # ── 心跳 ──────────────────────────────────────────────────────────────────
+  def heartbeat(agent_id, token) do
+    with {:ok, session} <- authenticate(agent_id, token) do
+      updated = %{session | last_heartbeat: utc_now(), status: "online"}
+      Cache.put("agent:session:#{agent_id}", updated)
+      {:ok, public(updated)}
+    end
+  end
+
+  # ── 列出所有 Agent ─────────────────────────────────────────────────────────
+  def list_all do
+    (Cache.get(@index_key) || [])
+    |> Enum.flat_map(fn id ->
+      case Cache.get("agent:session:#{id}") do
+        nil -> []
+        s   -> [public(s)]
+      end
+    end)
+  end
+
+  # ── 内部 ──────────────────────────────────────────────────────────────────
+  defp add_to_index(agent_id) do
+    ids = Cache.get(@index_key) || []
+    Cache.put(@index_key, Enum.uniq([agent_id | ids]))
+  end
+
+  defp public(session), do: Map.delete(session, :token_hash)
+
+  defp utc_now, do: DateTime.utc_now() |> DateTime.to_iso8601()
+end

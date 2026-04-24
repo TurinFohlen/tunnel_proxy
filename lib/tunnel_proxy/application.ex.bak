@@ -1,0 +1,27 @@
+defmodule TunnelProxy.Application do
+  use Application
+
+  def start(_type, args) do
+    port = Application.get_env(:tunnel_proxy, :http_port, 8080)
+
+    # 钩子1：优先从环境变量自动注册预设 Agent
+    TunnelProxy.AgentManager.init_preset_agent()
+
+    # 钩子2：然后根据参数锁定注册（禁止后续新 Agent）
+    if "--lock-registration" in args do
+      TunnelProxy.AgentManager.lock_registration()
+      IO.puts("[Application] 注册已锁定，禁止新 Agent 注册")
+    end
+
+    children = [
+      TunnelProxy.Cache,
+      TunnelProxy.PTYPool,
+      TunnelProxy.TaskQueue,
+      TunnelProxy.TaskExecutor,
+      {Bandit, plug: TunnelProxy.Router, port: port, scheme: :http}
+    ]
+
+    IO.puts(:stderr, "TunnelProxy — HTTP :#{port}")
+    Supervisor.start_link(children, strategy: :one_for_one, name: TunnelProxy.Supervisor)
+  end
+end

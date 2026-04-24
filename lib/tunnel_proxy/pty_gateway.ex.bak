@@ -1,0 +1,138 @@
+defmodule TunnelProxy.PTYGateway do
+  @moduledoc """
+  TCP PTY 网关：用户通过 netcat 连接，输入 token 后直接接入已存在的 PTY 会话。
+  """
+  use GenServer
+  require Logger
+
+  alias TunnelProxy.{AgentManager, PTYPool}
+
+  def start_link(opts) do
+    port = Keyword.get(opts, :port, 4444)
+    GenServer.start_link(__MODULE__, port, name: __MODULE__)
+  end
+
+  def init(port) do
+    opts = [:binary, packet: :line, reuseaddr: true, active: false]
+    case :gen_tcp.listen(port, opts) do
+      {:ok, listen_socket} ->
+        Logger.info("[PTYGateway] 监听端口 #{port}")
+        Task.start(fn -> accept_loop(listen_socket) end)
+        {:ok, %{listen_socket: listen_socket, port: port}}
+      {:error, reason} ->
+        {:stop, "无法监听端口 #{port}: #{reason}"}
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # 接受连接循环
+  # ---------------------------------------------------------------------------
+  defp accept_loop(listen_socket) do
+    case :gen_tcp.accept(listen_socket) do
+      {:ok, client_socket} ->
+        Logger.info("[PTYGateway] 新连接来自 #{inet_peername(client_socket)}")
+        Task.start(fn -> handle_client(client_socket) end)
+        accept_loop(listen_socket)
+      {:error, reason} ->
+        Logger.error("[PTYGateway] 接受连接失败: #{reason}")
+        accept_loop(listen_socket)
+    end
+  end
+
+  defp inet_peername(socket) do
+    case :inet.peername(socket) do
+      {:ok, {ip, port}} -> "#{:inet.ntoa(ip)}:#{port}"
+      _ -> "unknown"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # 处理单个客户端
+  # ---------------------------------------------------------------------------
+  defp handle_client(client_socket) do
+    :gen_tcp.send(client_socket, "Token: ")
+
+    case :gen_tcp.recv(client_socket, 0) do
+      {:ok, token_line} ->
+        token = String.trim(token_line)
+        case authenticate(token) do
+          {:ok, agent_id} ->
+            :gen_tcp.send(client_socket, "认证成功，Agent: #{agent_id}\r\n进入 PTY 会话...\r\n\r\n")
+            bridge_to_pty(client_socket, agent_id)
+          {:error, reason} ->
+            :gen_tcp.send(client_socket, "认证失败: #{reason}\r\n")
+            :gen_tcp.close(client_socket)
+        end
+      {:error, :closed} ->
+        :ok
+      {:error, reason} ->
+        Logger.error("[PTYGateway] 读取 token 失败: #{reason}")
+        :gen_tcp.close(client_socket)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # 认证：遍历所有 Agent，验证 token
+  # ---------------------------------------------------------------------------
+  defp authenticate(token) do
+    agents = AgentManager.list_all()
+    Enum.find_value(agents, {:error, "无效的 token"}, fn agent ->
+      case AgentManager.authenticate(agent.id, token) do
+        {:ok, _session} -> {:ok, agent.id}
+        _ -> nil
+      end
+    end)
+  end
+
+  # ---------------------------------------------------------------------------
+  # 桥接 TCP socket 与 PTY
+  # ---------------------------------------------------------------------------
+  defp bridge_to_pty(client_socket, agent_id) do
+    case PTYPool.get_pty(agent_id) do
+      {:ok, pty} ->
+        # 切换到原始模式（不按行缓冲），更适合 PTY
+        :inet.setopts(client_socket, packet: :raw, active: true)
+
+        # 记录当前 socket 作为 PTY 的输出目标
+        PTYPool.attach_client(agent_id, client_socket)
+
+        # 启动 TCP → PTY 转发（用户输入）
+        tcp_forwarder = spawn_link(fn -> forward_tcp_to_pty(client_socket, pty) end)
+
+        # 等待 socket 关闭
+        wait_for_socket_close(client_socket)
+
+        # 清理
+        PTYPool.detach_client(agent_id, client_socket)
+        Process.exit(tcp_forwarder, :kill)
+        :gen_tcp.close(client_socket)
+        Logger.info("[PTYGateway] 客户端断开，Agent: #{agent_id}")
+
+      {:error, reason} ->
+        :gen_tcp.send(client_socket, "获取 PTY 失败: #{reason}\r\n")
+        :gen_tcp.close(client_socket)
+    end
+  end
+
+  # TCP → PTY 转发
+  defp forward_tcp_to_pty(socket, pty) do
+    receive do
+      {:tcp, _socket, data} ->
+        ExPTY.write(pty, data)
+        forward_tcp_to_pty(socket, pty)
+      {:tcp_closed, _socket} ->
+        :ok
+      {:tcp_error, _socket, reason} ->
+        Logger.error("[PTYGateway] TCP 错误: #{reason}")
+        :ok
+    end
+  end
+
+  defp wait_for_socket_close(socket) do
+    receive do
+      {:tcp_closed, ^socket} -> :ok
+      {:tcp_error, ^socket, _} -> :ok
+    end
+  end
+end
+

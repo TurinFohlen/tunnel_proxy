@@ -1,0 +1,13 @@
+{application,shards,
+             [{description,"Erlang/Elixir library for partitioned or sharded ETS tables."},
+              {vsn,"1.1.1"},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {env,[]},
+              {licenses,["MIT"]},
+              {build_tools,["rebar3","make"]},
+              {doc,"doc"},
+              {links,[{"GitHub","https://github.com/cabol/shards"}]},
+              {modules,[shards,shards_enum,shards_group,shards_lib,
+                        shards_meta,shards_opts,shards_partition,
+                        shards_partition_sup]}]}.
