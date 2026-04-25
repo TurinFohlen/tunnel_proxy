@@ -29,12 +29,19 @@ defmodule TunnelProxy.PTYGateway do
 
     result || {:error, :invalid_token}
   end
-
-  defp random_port, do: :rand.uniform(35000) + 30000
+defp random_port do
+  ports_file = Path.join(:code.priv_dir(:tunnel_proxy), "tunnel_ports.txt")
+  case File.read(ports_file) do
+    {:ok, content} ->
+      ports = content |> String.split(~r/\s+/, trim: true) |> Enum.map(&String.to_integer/1)
+      if ports == [], do: 40000, else: Enum.random(ports)
+    _ -> 40000
+  end
+end
   defp build_init_cmd(_agent_id), do: "stty -echo; clear; export PS1='\\w > '"
   defp spawn_pty_server(port, init_cmd) do
     spawn(fn -> pty_server(port, init_cmd) end)
-    Logger.info("PTY 临时服务器已孵化，端口: #{port}，10 秒内未连接将自动关闭")
+    Logger.info("PTY 临时服务器已孵化，端口: #{port}，60 秒内未连接将自动关闭")
     :ok
   end
 
@@ -43,8 +50,8 @@ defp pty_server(port, init_cmd) do
   listen_opts = [:binary, {:active, false}, {:reuseaddr, true}]
   case :gen_tcp.listen(port, listen_opts) do
     {:ok, listen_sock} ->
-      timer = Process.send_after(self(), :timeout, 10_000)
-      case :gen_tcp.accept(listen_sock, 10_000) do
+      timer = Process.send_after(self(), :timeout, 60_000)
+      case :gen_tcp.accept(listen_sock, 60_000) do
         {:ok, sock} ->
           Process.cancel_timer(timer)
           :gen_tcp.close(listen_sock)
